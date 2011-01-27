@@ -18,6 +18,7 @@
  * along with liat.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <stdlib.h> /* malloc, free */
 #include <stdio.h>
 #include <string.h> /* memset */
 
@@ -94,6 +95,18 @@ _process_non_options (struct arguments_definition *def,
   struct arguments *args = def->user_data;
   bool go_on = true;
 
+  for (int i = optind;go_on && i < argc;++i) {
+    go_on = false;
+
+    if (NULL == args->filename) {
+      args->filename = malloc (strlen (argv[i]) + 1);
+      if (NULL != args->filename) {
+	strcpy (args->filename, argv[i]);
+	go_on = true;
+      }
+    }
+  }
+
   return go_on;
 }
 
@@ -124,6 +137,14 @@ _get_arguments (struct arguments *args, int argc, char *argv[])
   return get_arguments (&def, argc, argv);
 }
 
+static
+void
+_dispose_arguments (struct arguments *args)
+{
+  if (NULL != args->filename)
+    free (args->filename);
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -132,6 +153,7 @@ main (int argc, char *argv[])
   if (_get_arguments (&args, argc, argv)) {
   }
 
+  _dispose_arguments (&args);;
+
   return 0;
 }
-
